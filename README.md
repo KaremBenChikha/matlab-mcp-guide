@@ -8,7 +8,7 @@ This isn't marketing copy — it's the checklist I wish I'd had, written after a
 
 - Claude Code can **read, edit, build, and simulate Simulink models** directly (no manual copy-pasting of block diagrams into chat).
 - Claude Code can **run MATLAB code and test files** and get real command-window output back.
-- A **skill catalog** (~150+ MathWorks-authored procedures) that Claude consults *before* improvising an approach — so it follows the vendor's recommended pattern for e.g. building a model programmatically instead of guessing at `add_block` calls.
+- A **skill catalog** (169 MathWorks-authored procedures as of this writing — [full list](SKILLS_CATALOG.md)) that Claude consults *before* improvising an approach — so it follows the vendor's recommended pattern for e.g. building a model programmatically instead of guessing at `add_block` calls.
 
 ## Architecture
 
@@ -133,6 +133,8 @@ This calls `detect_matlab_toolboxes` and tells you immediately what's actually u
 
 Claude Code auto-discovers skills from `.claude/skills/` — short procedure files (`SKILL.md` + optional `references/`, `scripts/`) that tell the agent the *vendor-recommended* way to do something, instead of the agent inventing an approach from general MATLAB knowledge. For Simulink specifically this matters a lot: there are non-obvious idioms (see below) that produce working-but-wrong results if you skip them.
 
+The vendor catalog is large — 169 skills spanning aerospace, automotive, RF/antenna design, signal processing, wireless, robotics, code generation, and the Simulink modeling/test/compliance core. See **[SKILLS_CATALOG.md](SKILLS_CATALOG.md)** for the full list with descriptions, grouped by category — useful both as a "does a skill already cover this?" lookup and as a sense of how broad the catalog actually is before you assume you need custom logic.
+
 ### Recommended layout
 
 ```
@@ -141,7 +143,7 @@ your-project/
 ├── CLAUDE.md                      # project instructions + skill trigger table (see below)
 ├── .claude/
 │   └── skills/                    # AUTO-DISCOVERED by Claude Code
-│       ├── <vendor-skill-1>/      # symlink into ~/.matlab/agentic-toolkits/ (~150+ of these)
+│       ├── <vendor-skill-1>/      # symlink into ~/.matlab/agentic-toolkits/ (169 of these)
 │       ├── <vendor-skill-2>/      # ...
 │       ├── my-local-cheatsheet.md # a handful of REAL files: project-specific extras
 │       └── my-custom-check/
@@ -165,7 +167,7 @@ Gitignore the symlinks (they're regeneratable, and Windows symlinks don't always
 
 ### The trigger table pattern
 
-With 150+ skills available, the agent shouldn't have to guess which one applies. Put a trigger table straight in `CLAUDE.md` — see [`templates/CLAUDE.md.skills-section.example`](templates/CLAUDE.md.skills-section.example) for a full copy-paste starting point:
+With 169 skills available, the agent shouldn't have to guess which one applies. Put a trigger table straight in `CLAUDE.md` — see [`templates/CLAUDE.md.skills-section.example`](templates/CLAUDE.md.skills-section.example) for a full copy-paste starting point:
 
 | Trigger in the request | Skill |
 |---|---|
@@ -176,7 +178,7 @@ With 150+ skills available, the agent shouldn't have to guess which one applies.
 | "simulation is slow", compare two runs | `simulink-profiler-analyzer` |
 | Solver errors, step size, algebraic loops | `simulink-solver-profiler-analyzer` |
 
-This table does two jobs: it tells the agent *when* to stop and read a skill instead of improvising, and it doubles as a live index of what's actually relevant to your project versus the ~150 other skills in the catalog you'll never touch.
+This table does two jobs: it tells the agent *when* to stop and read a skill instead of improvising, and it doubles as a live index of what's actually relevant to your project versus the other 150+ skills in the catalog you'll never touch. Pull entries straight from [SKILLS_CATALOG.md](SKILLS_CATALOG.md) as your project's needs grow — e.g. anything doing RF/PCB work should pull from the 32-skill `rf-and-mixed-signal` category, automotive/CAN work from `automotive` and `test-and-measurement`, and so on.
 
 ### Always-read cheat-sheets (no frontmatter, don't auto-load)
 
@@ -236,6 +238,10 @@ codegen/
 | `.mcp.json` reverted your custom flags | `setupAgenticToolkit("configure")` was re-run | Keep a backup copy; reapply your flags after any toolkit reconfigure |
 | First tool call hangs for ~20-30s then works | Cold start — MATLAB itself is booting | Normal; only the first call per session pays this cost |
 | A skill produces suspiciously confident output for something you know isn't licensed | Skill degraded silently instead of stopping | Run `detect_matlab_toolboxes` to confirm; treat unexpected success with suspicion |
+
+## Reference
+
+- [`SKILLS_CATALOG.md`](SKILLS_CATALOG.md) — all 169 vendor skills, grouped by category, with their full trigger descriptions
 
 ## Templates in this repo
 
