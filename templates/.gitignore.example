@@ -1,0 +1,22 @@
+# --- MATLAB / Simulink build + cache artifacts (regenerated on every build) ---
+slprj/
+sccprj/
+codegen/
+*.slxc
+*.autosave
+*.asv
+*.mex*
+
+# Simulink model auto-backups
+*.slx.r*
+*.slx.original
+
+# --- Local logs / MCP socket folder ---
+mcplog/
+*.log
+
+# --- Vendor-managed skill symlinks ---
+# Regenerate with setupAgenticToolkit("update"); don't hand-edit or commit
+# the symlinks themselves. If you keep real local-extra skills mixed into
+# this folder, un-ignore them individually (see README "Recommended layout").
+.claude/skills/

@@ -1,0 +1,21 @@
+# Force binary handling. Without this, Windows CRLF conversion can silently
+# corrupt Simulink models and Office/PDF files.
+*.slx   binary
+*.slxc  binary
+*.mdl   binary
+*.mat   binary
+*.mlx   binary
+*.p     binary
+*.xlsx  binary
+*.pdf   binary
+*.zip   binary
+*.png   binary
+*.jpg   binary
+*.exe   binary
+
+# MATLAB source is plain text
+*.m     text
+*.md    text
+*.json  text
+*.yaml  text
+*.xml   text

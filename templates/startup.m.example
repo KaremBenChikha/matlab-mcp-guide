@@ -1,0 +1,8 @@
+% startup.m — placed in the folder the MATLAB MCP server uses as its
+% working directory. MATLAB runs this automatically on session start.
+%
+% Without satk_initialize(), every model_* MCP tool fails with
+% "Unrecognized function or variable 'satk_initialize'".
+
+satk_initialize();
+addpath(genpath(pwd));

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "matlab": {
+      "command": "C:/Users/<you>/.matlab/agentic-toolkits/bin/matlab-mcp-server.exe",
+      "args": [
+        "--log-folder=C:/mcplog",
+        "--matlab-session-mode=auto"
+      ]
+    }
+  }
+}
