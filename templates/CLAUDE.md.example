@@ -1,0 +1,239 @@
+# CLAUDE.md — template for a MATLAB/Simulink project
+
+<!--
+HOW TO USE THIS FILE
+====================
+Copy to your project root as CLAUDE.md, then replace every <angle-bracket> placeholder.
+Delete sections that don't apply. Keep it under ~200 lines - it is loaded into every
+session, and a long file dilutes the parts that matter.
+
+THE PRINCIPLE: CLAUDE.md is not documentation. It is the set of things that are true
+about this project and expensive to rediscover. Anything the agent can learn by reading
+the code does NOT belong here. Anything that cost someone an afternoon does.
+
+WHERE THIS FILE LIVES: if CLAUDE.md is gitignored, NOTHING in it reaches a colleague's
+clone. Anything a human collaborator must know belongs in a TRACKED file as well.
+-->
+
+## What this is
+
+<One paragraph: what the project is, who the client/stakeholder is, what the deliverable is.>
+
+There is no build or test command — the code runs inside MATLAB/Simulink. The regression suite is
+`<run_all_verify.m>`.
+
+**What is deliberately NOT here:** <e.g. client correspondence and meeting material live in
+OneDrive at ...>
+
+## Read this first
+
+**<PROJECT_INDEX.md>** — annotated file tree plus a "where to look, by question" table. Consult it
+**before** searching or globbing; it will usually point straight at the right file.
+
+<!-- An index like this is worth writing once. It converts a five-tool-call search into one read. -->
+
+## Code map
+
+<!-- Simulink projects have a discoverability problem: the behaviour is in .slx files the
+     agent cannot read as text. This table is the fix. -->
+
+| Layer | Path |
+|---|---|
+| Top-level model | `<TopModel>.slx` <if you keep variant models, name them and say what differs> |
+| Subsystem libraries | `<models/*.slx>` |
+| Algorithm bodies | `<functions/algorithms/*.m>` ← **the real logic lives here** |
+| <Domain> primitives | `<functions/area/*.m>` |
+| Pre-sim configuration | `<functions/preSim/*.m>` |
+| Post-sim diagnostics | `<functions/postSim/*.m>` |
+
+The `.slx` files are binary — **do not attempt to read or edit them as text.** To change behaviour,
+edit the corresponding `.m` file, which is what the Simulink MATLAB Function blocks call.
+
+<!-- Then any project-wide convention that is invisible from the code but assumed everywhere:
+     an index or enum ordering, a units convention, a naming scheme, a sign convention.
+     One line each. These are cheap to state and expensive for an agent to infer wrongly. -->
+
+<e.g. "Index convention throughout: 1 = <first>, 2 = <second>, 3 = <third>.">
+<e.g. "All timestamps are microseconds since power-on, uint64.">
+<e.g. "Angles are radians internally; degrees only at the display boundary.">
+
+## Which skills can actually run here
+
+<!-- THE MOST IMPORTANT SECTION. The toolkit installs regardless of what you license.
+     Without this table the agent attempts things it cannot do, and the failure surfaces
+     three steps later as something confusing. Refresh it with detect_matlab_toolboxes. -->
+
+Verified <date>. Installed and licensed: **<MATLAB, Simulink, ...>** — nothing else.
+
+| Skill | Status | Blocker |
+|---|---|---|
+| `building-simulink-models`, `simulating-simulink-models`, the profiler/debugger skills, `managing-simulink-projects` | Usable | — |
+| `specifying-mbd-algorithms`, `specifying-plant-models`, `filing-bug-reports` | Usable | Templates only, no toolbox needed |
+| `generate-requirement-drafts` | Degraded | No Requirements Toolbox → use its **YAML fallback**, not `.slreqx` |
+| `testing-simulink-models` | Degraded | No Simulink Test → no `sltest.TestCase`; use plain `sim` + `assert` |
+| `checking-model-compliance`, `author-modeladvisor-checks` | **Blocked** | No Simulink Check → no Model Advisor |
+| `building-architecture-models` | **Blocked** | No System Composer |
+| Most MATLAB-catalog skills (RF, radar, wireless, robotics, image processing, …) | **Blocked** | Those toolboxes are not installed |
+
+**When a skill is blocked, say so and stop — do not fake Model Advisor output or invent compliance
+results.** `detect_matlab_toolboxes` settles any doubt in one call.
+
+<!-- That last paragraph is the whole point of the section. Without it, a plausible-looking
+     compliance table can appear in a certification context. Naming the tool gives the agent
+     a cheap alternative to guessing. -->
+
+## Skills — trigger table
+
+<!-- 169 skills is too many to choose from reliably. Map PHRASINGS YOU ACTUALLY USE to skill
+     names. Two jobs: tells the agent when to stop and read a skill instead of improvising,
+     and doubles as a live index of what is relevant to YOUR project. -->
+
+**Check these before improvising a MATLAB/Simulink approach** — if one covers the task, follow it
+rather than inventing a method. Read its `SKILL.md` first; only open `references/` or `scripts/`
+when `SKILL.md` says to.
+
+| Trigger in the request | Skill |
+|---|---|
+| "is the model compliant", DO-178C / MISRA / MAB / ISO 26262, Model Advisor run | `checking-model-compliance` |
+| Build or edit a Simulink model programmatically | `building-simulink-models` |
+| Run/configure a simulation | `simulating-simulink-models` |
+| Write or run model tests | `testing-simulink-models`, `authoring-simulink-inputs` |
+| Fault injection, safety analysis | `inject-faults`, `manage-safety-analysis` |
+| "write a spec / test plan / implementation plan" for an algorithm | `specifying-mbd-algorithms` |
+| Project paths broken, model refs, add files to project | `managing-simulink-projects` |
+| "wrong value at t=X", step through a sim | `simulink-debug-commandline` |
+| "simulation is slow", compare two runs | `simulink-profiler-analyzer` |
+| "model takes forever to load/compile" | `simulink-profile-initialization` |
+| Solver errors, step size, zero-crossings, algebraic loops | `simulink-solver-profiler-analyzer` |
+| "file a bug", "document this defect" | `filing-bug-reports` |
+
+### Always-applicable idioms
+
+<!-- Keep these as plain .md files WITHOUT YAML frontmatter so Claude Code does not surface
+     them as invocable skills. They encode things that produce working-but-WRONG results
+     if skipped. -->
+
+Read the relevant note before writing any MATLAB that touches a model:
+
+- **Interaction** — "this block" = `gcb`, "this model" = `bdroot`, "this subsystem" = `gcs`
+- **Modeling** — use `add_block` + `Simulink.BlockDiagram.arrangeSystem`; **never** hand-position
+  blocks with pixel coordinates
+- **Simulation** — **always** `out = sim(in)` with a `Simulink.SimulationInput`; **never**
+  `set_param` for simulation parameters — that mutates the model file instead of configuring a run
+- **Baseline** — capture a baseline **before** modifying any model, then verify against it
+
+## MATLAB MCP
+
+Configured in `.mcp.json` as server name `matlab` (project scope, stdio).
+**Restart Claude Code after editing it** — MCP servers load at session start.
+
+Prefer the `model_*` tools over hand-written `set_param`/`get_param` — they are what the skills
+assume, and mixing approaches produces advice that doesn't match what then happens.
+Cold start is ≈20–30 s for the first call; later calls in the same session are fast.
+
+Facts worth not rediscovering:
+
+- MATLAB root `<C:\Program Files\MATLAB\R2026a>`. Binary is the toolkit's
+  `~/.matlab/agentic-toolkits/bin/matlab-mcp-server.exe`.
+- `startup.m` runs `satk_initialize` + `addpath(genpath(...))` automatically, because the server
+  starts MATLAB here. **Without `satk_initialize` every `model_*` tool fails** with "Unrecognized
+  function or variable". If you start MATLAB manually from another folder, run it yourself.
+- `--log-folder=<C:/mcplog>` is **deliberate, not cosmetic.** The server opens a unix-domain socket
+  inside its log folder; long paths fail with `socket path is too long`, and `%TEMP%` failed with
+  `access denied for socket file`. Keep a short, writable, local folder.
+- `--matlab-session-mode=auto` is deliberate too. `setupAgenticToolkit` writes `existing`, which
+  only works when a MATLAB with `satk_initialize` is *already* running; `auto` falls back to
+  starting one.
+- **Never run `setupAgenticToolkit("configure")` from an agent session.** It prompts with `input()`;
+  every MCP call arrives as an empty line producing "Invalid selection", and it loops forever. No
+  tool call can rescue it — a human must press Ctrl-C in the MATLAB desktop. It also overwrites
+  `.mcp.json` wholesale; a backup is at `<tools/.mcp.json.bak>`.
+
+## Version control
+
+- **`.slx` files cannot be merged.** `.gitattributes` marks them `binary`, which expands to
+  `-diff -merge -text`, so Git refuses to auto-merge and the only resolution is "pick one side and
+  redo the other side's work by hand in Simulink." **Avoid the situation rather than resolving it:**
+  put logic in `.m` files, hold one model at a time, keep branches short.
+- **Before any `model_edit`**, confirm the tree is clean and committed — `model_edit` is destructive
+  and a binary `.slx` edit cannot be diffed or undone. `git stash`/commit first; never assume a
+  restore point exists.
+- <Branch protection / PR policy.>
+
+Named restore points:
+
+| Ref | What |
+|---|---|
+| `<baseline/YYYY-MM-DD-name>` | <what state this captures> |
+
+## Conventions
+
+- <e.g. MATLAB functions are `%#codegen` and written for embedded code generation: fixed-size
+  arrays, no dynamic allocation, no cell arrays. Keep new code codegen-safe.>
+- <e.g. Header comments cite the governing requirement or spec section. Preserve and update those
+  citations when editing — they are the traceability evidence.>
+- <e.g. your file/document naming scheme, if there is one.>
+
+## Do not touch
+
+<!-- Without this the agent will helpfully "fix" things that regenerate, or hand-edit an
+     output whose source is elsewhere. -->
+
+- `resources/project/**` — MATLAB project metadata (generated XML). **Committed deliberately** —
+  `openProject` fails without it.
+- `<docs/diagrams/*.svg>` — **generated**. Edit `<docs/diagrams/src/*.py>` and regenerate; never
+  hand-edit the output.
+- `skills/**` — vendor-authored. Read and follow them; don't edit. Project-specific procedures
+  belong in a new file, not inside a vendor skill.
+- <The `archive/...` branch — a frozen record. Never merge it.>
+
+## Maintenance — keep README.md current (mandatory)
+
+<!-- The rule that pays off most. An agent session has no memory of last week. A logbook that
+     explains WHY a decision was made is the difference between an agent that reinforces your
+     architecture and one that relitigates it every session. -->
+
+`README.md` is the only documentation this repository ships. **Never finish a piece of work without
+updating it in the same commit** — not a follow-up one.
+
+### 1. The logbook is not optional
+
+Add an entry for anything substantive:
+
+```
+| **YYYY-MM-DD** | **Short title.** What changed and why. |
+```
+
+- **Say why, not what.** `git log` already records what. The logbook exists for the reasoning that
+  would otherwise evaporate — the constraint discovered, the option rejected, the measurement that
+  settled it. *"Scoped the CloseFcn to the project root"* is weak; *"…it was deleting `.slxc`
+  relative to MATLAB's current folder, demonstrated by destroying a decoy in an unrelated tree"*
+  is the entry worth having.
+- **Cite evidence** — test counts, spec IDs, measured numbers. A claim that something works without
+  saying how that was established is noise.
+- **Record corrections.** When a documented fact turns out wrong, that is the *most* valuable entry.
+  **Never silently overwrite a wrong fact.**
+- **Never record a result you have not run.** If a claim needs MATLAB and MATLAB is unavailable, say
+  so in the entry instead of assuming.
+- **Skip trivia** — formatting, comment typos, model layout tidying. One entry per day per theme,
+  not per commit.
+
+### 2. The rest of README that goes stale
+
+| When you change… | Update… |
+|---|---|
+| Add/remove/rename a file or folder | Layout |
+| Add or change a `verify_*.m` | The test-count table |
+| A new codegen/naming rule | Conventions |
+| Resolve or discover a blocker | Open threads |
+| Add a tag or branch worth keeping | Named restore points |
+
+### 3. Verify before you write it down
+
+Don't document a behaviour you haven't observed. If it needs MATLAB and MATLAB is unavailable, say
+so rather than assuming.
+
+### 4. This file
+
+If `CLAUDE.md` is gitignored, it never reaches a clone. Anything a human collaborator must know
+belongs in a tracked file as well — duplication beats a rule nobody receives.

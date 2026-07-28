@@ -1,0 +1,147 @@
+function results = run_all_verify(varargin)
+%RUN_ALL_VERIFY  Run every verification script and print one summary.
+%
+%   run_all_verify              % everything (block suites need Simulink)
+%   run_all_verify('pure')      % only the pure-MATLAB suites
+%   results = run_all_verify()  % also return the per-suite struct array
+%
+% WHY THIS EXISTS
+% ---------------
+% There is no CI for a MATLAB/Simulink project unless you buy a server licence.
+% The author running this locally IS the gate. Require its pasted output in your
+% pull-request template, together with which .slx files were touched.
+%
+% This template already works around two MATLAB traps that produce silently
+% WRONG results rather than errors. Both cost real debugging time. See the
+% comments on capture_suite and tally_suite.
+%
+% TO ADAPT: change the `suites` struct below, and the pass/fail line patterns in
+% tally_suite if your scripts print something other than PASS/FAIL.
+
+    pureOnly = nargin > 0 && strcmpi(varargin{1}, 'pure');
+
+    here = fileparts(mfilename('fullpath'));
+    addpath(genpath(here));
+
+    % ---- EDIT ME: your verification scripts -----------------------------
+    suites = struct( ...
+        'name',          {'verify_thing_a', 'verify_thing_b', 'verify_blocks'}, ...
+        'needsSimulink', {false,            false,            true});
+    % ---------------------------------------------------------------------
+
+    nAll = numel(suites);
+
+    if pureOnly
+        suites = suites(~[suites.needsSimulink]);
+    elseif ~license('test', 'Simulink')
+        % Be loud about a partial run. A "green" result that quietly skipped
+        % half the suites is worse than a red one.
+        fprintf(2, ['No Simulink licence available - skipping the block suites.\n' ...
+                    'This is a PARTIAL run; do not report it as a full pass.\n\n']);
+        suites = suites(~[suites.needsSimulink]);
+    end
+
+    fprintf('\n=== regression suite ===\n\n');
+
+    results = repmat(struct('name', '', 'passed', 0, 'failed', 0, ...
+                            'ok', false, 'seconds', 0, 'err', ''), 1, numel(suites));
+
+    for k = 1:numel(suites)
+        % Time it HERE, not inside the runner. `run` executes the script in the
+        % CALLER'S workspace, so a suite that happens to assign `t0` would
+        % silently destroy a tic handle held there. That produced a reported
+        % runtime of 959579.8 seconds before it was noticed.
+        tStart = tic;
+        [out, err] = capture_suite(suites(k).name);
+        results(k) = tally_suite(suites(k).name, out, err, toc(tStart));
+
+        r = results(k);
+        if r.ok
+            fprintf('  PASS  %-22s %3d checks  %5.1f s\n', r.name, r.passed, r.seconds);
+        else
+            fprintf(2, '  FAIL  %-22s %3d/%d failed  %5.1f s  %s\n', ...
+                    r.name, r.failed, r.passed + r.failed, r.seconds, r.err);
+        end
+    end
+
+    nBad = sum(~[results.ok]);
+    fprintf('\n%d/%d suites passed, %d checks total.\n', ...
+            numel(results) - nBad, numel(results), sum([results.passed]));
+
+    % Distinguish a full pass from a partial one explicitly - otherwise a
+    % skipped-suite run reads as success in a pull request.
+    if nBad > 0
+        fprintf(2, '\nSUITE FAILED - do not open the pull request until this is green.\n');
+    elseif pureOnly || numel(results) < nAll
+        fprintf('\nPARTIAL PASS (block suites not run) - say so in the pull request.\n');
+    else
+        fprintf('\nALL SUITES PASSED.\n');
+    end
+
+    if nargout == 0
+        clear results
+    end
+end
+
+% -------------------------------------------------------------------------
+function [out, err] = capture_suite(RUNALLVERIFY_cmd_)
+% Execute one suite script and capture everything it prints.
+%
+% TRAP 1: `run` executes a script in the CALLER'S workspace - it is not a
+% function call. Any variable the suite assigns overwrites a local of the same
+% name here. Two defences:
+%   1. The command string is built BEFORE evalc runs, so the suite clobbering
+%      the argument afterwards is harmless.
+%   2. The single local is named so no plausible suite variable collides.
+% Nothing else lives in this function - timing and counting are done by the
+% caller, whose workspace therefore stays clean.
+    RUNALLVERIFY_cmd_ = sprintf('run(''%s'')', RUNALLVERIFY_cmd_);
+    err = '';
+    try
+        out = evalc(RUNALLVERIFY_cmd_);
+    catch ME
+        out = '';
+        err = ME.message;
+    end
+end
+
+% -------------------------------------------------------------------------
+function r = tally_suite(name, out, err, seconds)
+% Count the PASS/FAIL lines a suite printed.
+%
+% TRAP 2: MATLAB regexp has NO \b word boundary - it is \< and \> - and needs
+% the 'lineanchors' option for ^ to mean start-of-LINE rather than start of the
+% whole string. Get either wrong and every count silently reads zero: nothing
+% errors, and the summary looks plausible. `(?m)` also does nothing here.
+%
+% Verified empirically on this MATLAB:
+%   '(?m)^\s*PASS\b'            -> 0 matches
+%   '^\s*PASS\b' + lineanchors  -> 0 matches
+%   '^\s*PASS\>' + lineanchors  -> correct
+    r = struct('name', name, 'passed', 0, 'failed', 0, ...
+               'ok', false, 'seconds', seconds, 'err', err);
+
+    if ~isempty(out)
+        r.passed = numel(regexp(out, '^\s*PASS\>', 'start', 'lineanchors'));
+        r.failed = numel(regexp(out, '^\s*FAIL\>', 'start', 'lineanchors'));
+    end
+
+    if ~isempty(err)
+        r.ok = false;
+        if r.failed == 0
+            r.failed = 1;   % it threw; count that as at least one failure
+        end
+        return
+    end
+
+    % A suite that asserts rather than printing PASS lines signals success by
+    % reaching the end without throwing.
+    if r.passed == 0 && r.failed == 0
+        r.passed = 1;
+    end
+
+    r.ok = (r.failed == 0);
+    if ~r.ok
+        r.err = 'printed FAIL lines';
+    end
+end
