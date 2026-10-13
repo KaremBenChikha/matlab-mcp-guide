@@ -1,0 +1,35 @@
+# Skill junctions — what is linked here, and how to restore what is not
+
+<!-- Copy to .claude/skills/RELINK.md in your project (the folder is usually gitignored). Fill in the date,
+     versions and the keep-list. The point: after `setupAgenticToolkit("update")` renames skills, you can
+     rebuild the links from a written list instead of guessing. -->
+
+Pruned <YYYY-MM-DD> from <N> entries to <M>. Built against matlab <version> / simulink <version> catalogs.
+
+## Why the prune
+This machine has only <MATLAB, Simulink, ...> licensed. Skills for other toolboxes load into every session's
+context and can never run.
+
+## Kept
+| Source | Count | What |
+|---|---|---|
+| `simulink/skills-catalog/**` | all | whole Simulink catalog (a skill that says "needs a licence you lack" beats silence) |
+| `matlab/skills-catalog/matlab-core` | 7 | ... |
+| <more groups> | | |
+
+Not from any catalog: local skills (`simulink-tile-layout`, ...) and loose cheat-sheets
+(`simulink-interaction.md`, `-modeling.md`, `-simulation.md`, `-baseline-test.md`; no frontmatter on purpose).
+
+## Restore one skill / a group (Git Bash, Windows)
+```bash
+cd <project>/.claude/skills
+T="$HOME/.matlab/agentic-toolkits"
+s="$T/matlab/skills-catalog/<group>/<skill>"
+cmd //c mklink //J "$(basename "$s")" "$(cygpath -w "$s")"      # //J, not /J ; cygpath -w, never hand-escaped
+```
+Restart Claude Code afterwards.
+
+## After a toolkit update
+`setupAgenticToolkit("update", Prompt=false)` — **Prompt=false is mandatory from an agent session.**
+Delete every junction, recreate from this list, then check for BROKEN links (mklink succeeds even when the
+target does not exist). Restart Claude Code (a new MCP server binary only loads at session start).

@@ -1,0 +1,92 @@
+NOTICE
+======
+
+This repository contains material from two sources with different licences.
+
+
+1. THE GUIDE ITSELF — MIT
+-------------------------
+
+README.md, CLAUDE.md, docs/, install/, tools/, SKILLS_CATALOG.md (the list is generated
+from the vendor skills' frontmatter; descriptions are MathWorks' text, reproduced only to
+index them), archive/, everything under templates/, and skills/simulink-tile-layout are
+original work by the repository author, licensed MIT (see LICENSE).
+
+
+2. THE skills/ FOLDER — MathWorks, redistributed under BSD-3-Clause + clause 3
+-----------------------------------------------------------------------------
+
+Everything under skills/ EXCEPT skills/simulink-tile-layout (original, MIT) is authored by
+The MathWorks, Inc. and is redistributed
+here in source form under the terms below. It is NOT original work of this
+repository's author, and is NOT modified.
+
+Provenance: these nine entries came from an earlier distribution of the
+MathWorks Agentic Toolkit than the one currently installed by
+setupAgenticToolkit. Several are present in today's catalog under different
+names (for example, check-authoring is now author-modeladvisor-checks). See
+skills/README.md for the mapping and for why you should generally prefer the
+catalog copy.
+
+The MCP server binary is deliberately NOT redistributed here. Obtain it with
+setupAgenticToolkit("install") from inside MATLAB — that fetches the current
+version and keeps it updated. See section 3 of README.md.
+
+
+LICENCE TEXT, reproduced in full as clauses 1 and 2 require
+-----------------------------------------------------------
+
+Copyright 2025-2026, The MathWorks, Inc.
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. In all cases, the software is, and all modifications and derivatives of the
+   software shall be, licensed to you solely for use in conjunction with
+   MathWorks products and service offerings.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+PLEASE NOTE CLAUSE 3
+--------------------
+
+Clause 3 is an addition to the standard BSD-3-Clause text. It restricts use of
+this material to use in conjunction with MathWorks products and service
+offerings. If you do not have a MATLAB/Simulink licence, clause 3 applies to
+you and these skills are not licensed for your use.
+
+The toolkit documentation also states that MCP servers must not be shared by
+multiple users, and directs anyone needing centralised deployment to contact
+MathWorks. That is one of the reasons the server binary is not included here.
+
+
+UPSTREAM
+--------
+
+  https://github.com/matlab/simulink-agentic-toolkit
+  https://github.com/matlab/matlab-mcp-core-server
+
+If you want the maintained, current versions of these skills — which you almost
+certainly do — install them from MATLAB rather than copying from here:
+
+  setupAgenticToolkit("install")
+  setupAgenticToolkit("update")

@@ -1,0 +1,48 @@
+% startup.m - runs automatically when MATLAB starts in this folder.
+%
+% The MATLAB MCP server is configured (see .mcp.json, --initial-working-folder)
+% to start MATLAB here, so this bootstraps everything an agent session needs.
+%
+% 1. satk_initialize registers the Simulink Agentic Toolkit tool entry points
+%    (model_overview, model_read, model_edit, ...) and calls shareMATLABSession.
+%    WITHOUT IT, EVERY model_* MCP TOOL FAILS with
+%    "Unrecognized function or variable 'satk_initialize'".
+%    This is the single most common first-time failure, and it looks like a
+%    broken install rather than a missing line.
+%    It must run once per MATLAB session.
+% 2. Your project's own functions need to be on the path too.
+%
+% Three details that matter:
+%   - The explicit addpath comes FIRST. satk_initialize.p lives in the toolkit's
+%     simulink/ folder, which is not on a fresh MATLAB path. Without this line
+%     the very next line fails.
+%   - evalc suppresses a noisy banner that would otherwise land in every tool
+%     result. Errors still propagate normally.
+%   - try/catch with a warning, not a bare call: if the toolkit is missing you
+%     want a readable warning, not a startup.m that aborts before setting your
+%     own project paths.
+
+try
+    h = getenv('USERPROFILE'); if isempty(h), h = getenv('HOME'); end   % Windows | macOS/Linux
+    addpath(fullfile(h, '.matlab', 'agentic-toolkits', 'simulink'));
+    evalc('satk_initialize');   % silence the banner; errors still propagate
+catch err
+    warning('startup:satk', 'satk_initialize failed: %s', err.message);
+end
+
+% Project's own code.
+% CAUTION: a bare genpath also sweeps .git, .claude/worktrees/* and any reference folder onto the path, and a
+% stale worktree copy of a function then SHADOWS the real one. Prefer a filtered helper that skips any path
+% containing a dot-folder (see docs/GUIDE.md L12). This simple form is fine for a small project with no worktrees.
+addpath(genpath(fileparts(mfilename('fullpath'))));
+
+% Optional: keep build artefacts under work/ instead of scattered beside the
+% models, so .gitignore stays simple. Uncomment if wanted.
+%
+% projRoot = fileparts(mfilename('fullpath'));
+% Simulink.fileGenControl('set', ...
+%     'CacheFolder',   fullfile(projRoot, 'work', 'slprj'), ...
+%     'CodeGenFolder', fullfile(projRoot, 'work', 'codegen'));
+
+% NOTE: if you start MATLAB MANUALLY from another folder and want the MCP tools
+% to attach to that session, run satk_initialize yourself there first.

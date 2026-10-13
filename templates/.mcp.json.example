@@ -1,0 +1,34 @@
+{
+  "_comment": "Place at your PROJECT ROOT as .mcp.json. JSON has no comments, so strip the _comment and _flag_notes keys before use. Restart Claude Code after any edit - MCP servers load once, at session start.",
+
+  "_flag_notes": {
+    "--matlab-root": "Pins the release. Essential if several MATLAB versions are installed.",
+    "--initial-working-folder": "Where MATLAB starts, and therefore WHICH startup.m runs. Point at your project root. See startup.m.example.",
+    "--matlab-session-mode": "Use 'auto', NOT 'existing'. setupAgenticToolkit writes 'existing', which only works when a MATLAB with satk_initialize already run is sitting there waiting. 'auto' starts one when needed.",
+    "--matlab-display-mode": "'desktop' so you can watch what the agent does and answer any interactive prompt. 'headless' hides prompts you may need to answer.",
+    "--extension-file": "Registers the Simulink model_* tools. Without it you get the five MATLAB tools only.",
+    "--log-folder": "MUST be short, local and writable. The server opens a unix-domain socket inside it. Long paths fail with 'socket path is too long'; %TEMP% failed with 'access denied for socket file'. Never point this at OneDrive or any synced folder.",
+    "--log-level": "The vendor's first troubleshooting step for connection problems is reading these logs.",
+    "--disable-telemetry": "Usage data is collected BY DEFAULT. This opts out - and must be re-applied after every toolkit update.",
+    "alwaysLoad": "Connect at session start rather than on first tool use.",
+    "WARNING": "setupAgenticToolkit('configure') OVERWRITES this file wholesale and reinstates matlab-session-mode=existing. Keep a backup and re-apply your flags after any reconfigure or update. And never run that command from an agent session - it prompts with input() and will wedge MATLAB in a loop only a human can break with Ctrl-C."
+  },
+
+  "mcpServers": {
+    "matlab": {
+      "type": "stdio",
+      "command": "C:/Users/<you>/.matlab/agentic-toolkits/bin/matlab-mcp-server.exe",
+      "args": [
+        "--matlab-root=C:/Program Files/MATLAB/R2026a",
+        "--initial-working-folder=C:/path/to/your/project",
+        "--matlab-session-mode=auto",
+        "--matlab-display-mode=desktop",
+        "--extension-file=C:/Users/<you>/.matlab/agentic-toolkits/simulink/tools/tools.json",
+        "--log-folder=C:/mcplog",
+        "--log-level=info",
+        "--disable-telemetry=true"
+      ],
+      "alwaysLoad": true
+    }
+  }
+}
