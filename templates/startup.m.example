@@ -12,8 +12,10 @@
 %    It must run once per MATLAB session.
 % 2. Your project's own functions need to be on the path too.
 %
-% Three details that matter:
-%   - The explicit addpath comes FIRST. satk_initialize.p lives in the toolkit's
+% Details that matter:
+%   - shareMATLABSession fallback: the MCP Server Toolbox add-on is not always loaded from the add-on
+%     registry (seen with `matlab -batch` on macOS R2026b), so it is added by path when missing.
+%   - The explicit addpath to the toolkit comes FIRST. satk_initialize.p lives in the toolkit's
 %     simulink/ folder, which is not on a fresh MATLAB path. Without this line
 %     the very next line fails.
 %   - evalc suppresses a noisy banner that would otherwise land in every tool
@@ -23,9 +25,20 @@
 %     own project paths.
 
 try
-    h = getenv('USERPROFILE'); if isempty(h), h = getenv('HOME'); end   % Windows | macOS/Linux
-    addpath(fullfile(h, '.matlab', 'agentic-toolkits', 'simulink'));
-    evalc('satk_initialize');   % silence the banner; errors still propagate
+    if ispc, home = getenv('USERPROFILE'); else, home = getenv('HOME'); end
+    if isempty(which('shareMATLABSession'))
+        roots = {};
+        try, roots{end+1} = matlab.internal.addons.util.retrieveAddOnsInstallationFolder; catch, end %#ok<AGROW>
+        roots = [roots, {fullfile(home, 'Library', 'Application Support', 'MathWorks', 'MATLAB Add-Ons'), ... % macOS
+                         fullfile(getenv('APPDATA'), 'MathWorks', 'MATLAB Add-Ons'), ...                 % Windows
+                         fullfile(home, 'Documents', 'MATLAB', 'Add-Ons')}];                              % Linux default
+        for k = 1:numel(roots)
+            d = dir(fullfile(roots{k}, 'MATLAB_MCP_Server_Toolbox@*'));
+            if ~isempty(d), addpath(fullfile(d(end).folder, d(end).name)); break; end
+        end
+    end
+    addpath(fullfile(home, '.matlab', 'agentic-toolkits', 'simulink'));
+    evalc('satk_initialize');
 catch err
     warning('startup:satk', 'satk_initialize failed: %s', err.message);
 end

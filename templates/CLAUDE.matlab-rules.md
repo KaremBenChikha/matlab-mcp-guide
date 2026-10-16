@@ -1,15 +1,15 @@
 <!--
 APPEND THIS BLOCK TO THE PROJECT'S CLAUDE.md (the installing agent does it in step 8 of the repo's CLAUDE.md).
-It is the distilled, always-loaded part of the knowledge in matlab-mcp-guide. Replace the <placeholders>.
+It is the distilled, always-loaded part of the knowledge in sim2paper. Replace the <placeholders>.
 Keep the "why" fragments: they are what stops a later session from "improving" a rule away.
-Source & depth: https://github.com/KaremBenChikha/matlab-mcp-guide  (docs/SIMULINK_TRAPS.md, docs/GUIDE.md)
+Source & depth: https://github.com/KaremBenChikha/sim2paper  (docs/SIMULINK_TRAPS.md, docs/GUIDE.md)
 -->
 
-## MATLAB / Simulink — rules for every session (from matlab-mcp-guide)
+## MATLAB / Simulink - rules for every session (from sim2paper)
 
 **Environment.** MATLAB `<R20xx>` at `<root>`; MCP server `matlab` in `.mcp.json` (stdio); MATLAB starts in this
 folder, so `startup.m` runs `satk_initialize`. Licensed products (from `detect_matlab_toolboxes`, <date>):
-`<list>`. Restart Claude Code after any `.mcp.json` / skills change — both load at session start. First tool
+`<list>`. Restart Claude Code after any `.mcp.json` / skills change - both load at session start. First tool
 call takes ~20–30 s (MATLAB boot); that is not a hang.
 
 **Tools.** Prefer `model_overview` → `model_read` → `model_query_params` / `model_resolve_params` to look,
@@ -18,14 +18,14 @@ call takes ~20–30 s (MATLAB boot); that is not a hang.
 `model_test` needs Simulink Test.
 
 **Never, from an agent session:**
-- run `setupAgenticToolkit("configure")` or `("update")` without `Prompt=false` — it prompts with `input()`,
+- run `setupAgenticToolkit("configure")` or `("update")` without `Prompt=false` - it prompts with `input()`,
   wedges MATLAB, and only a human pressing Ctrl-C at the desktop recovers it. Same for any `input`,
   `keyboard`, `uiwait`, `questdlg`, bare `pause`.
 - `restoredefaultpath` (removes the MCP server's functions from the path) or restart the shared MATLAB.
 - read or edit `.slx`/`.sldd` as text; `cp -a` symlinked skills (it dereferences them silently).
 - hand-position blocks (use `Simulink.BlockDiagram.arrangeSystem`; exception: the `simulink-tile-layout` skill).
 - `set_param` simulation settings on the model for a run: use `out = sim(in)` with a `Simulink.SimulationInput`.
-- use a bare `addpath(genpath(root))` — it pulls `.git` and worktrees onto the path and a stale copy shadows the
+- use a bare `addpath(genpath(root))` - it pulls `.git` and worktrees onto the path and a stale copy shadows the
   real function. Use a filtered helper; diagnose with `which <fn> -all` + `git worktree list`.
 - fake output: **if a skill/tool needs a product that `detect_matlab_toolboxes` does not list, say so and stop.**
   No invented Model Advisor, coverage, System Composer or compliance results. No test counts you did not run.

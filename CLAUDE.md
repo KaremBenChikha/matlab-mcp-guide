@@ -1,4 +1,4 @@
-# CLAUDE.md — instructions for the Claude Code agent that was pointed at this repository
+# CLAUDE.md - instructions for the Claude Code agent that was pointed at this repository
 
 > **You are probably here because the user said something like *"install this MATLAB setup into my project"*
 > and gave you this repo's URL.** This file tells you exactly how to do that, in order, and hands you the
@@ -9,23 +9,25 @@
 **MATLAB / Simulink** through the MathWorks **Agentic Toolkit** (MATLAB MCP server + skill catalogs). It was
 written from production use (R2026a, Windows 11, Simulink models under Git, no CI), not from the vendor docs.
 Everything marked *Verified* was run; *Vendor* comes from MathWorks' docs; *Unverified* is flagged (e.g.
-`install.sh` has not been run on macOS/Linux).
+`install.sh` is verified on macOS, 2026-10-16, but not yet run on Linux). Per-OS steps: [docs/INSTALL.md](docs/INSTALL.md).
+Starting a paper or thesis on top of MATLAB? Also read [docs/RESEARCH_WORKFLOW.md](docs/RESEARCH_WORKFLOW.md) and copy
+[research-template/](research-template).
 
 **What this repo is not:** it does not contain MATLAB, the MCP server binary, or the vendor skill catalogs
-(177 skills). Those come from MathWorks via `setupAgenticToolkit` (licence reasons — [NOTICE](NOTICE)).
+(177 skills). Those come from MathWorks via `setupAgenticToolkit` (licence reasons - [NOTICE](NOTICE)).
 
 ---
 
 ## 0. Ground rules for you, the installing agent
 
-1. **Ask before anything that changes the user's machine outside the project folder** — downloading the
+1. **Ask before anything that changes the user's machine outside the project folder** - downloading the
    MathWorks installer, installing a MATLAB add-on, creating `C:\mcplog`, writing `~/.matlab/**`. Say what, from
    where, how big; wait for a clear yes. A `-DryRun` of the installer is free and should come first.
 2. **Never overwrite** an existing `.mcp.json`, `startup.m`, `CLAUDE.md` or `.claude/skills/*` without showing a
    diff and getting a yes. The installer already refuses; do not "helpfully" pass `-Force`.
 3. **Never run `setupAgenticToolkit("configure")` or `("update")` without `Prompt=false`.** Without it the
    function opens a numbered `input()` menu that you cannot answer; MATLAB hangs in an "Invalid selection" loop
-   and *only a human pressing Ctrl-C in the MATLAB desktop* recovers it — taking every session's MATLAB with it.
+   and *only a human pressing Ctrl-C in the MATLAB desktop* recovers it - taking every session's MATLAB with it.
    Same for any MATLAB call that may prompt (`input`, `keyboard`, `uiwait`, `questdlg`, bare `pause`).
 4. **Never use `restoredefaultpath`** in the MATLAB session (it removes the MCP server's own functions).
 5. **Do not commit, push or open PRs** in the user's project unless asked.
@@ -35,7 +37,7 @@ Everything marked *Verified* was run; *Vendor* comes from MathWorks' docs; *Unve
 
 ---
 
-## 1. Decision tree — what state is the machine in?
+## 1. Decision tree - what state is the machine in?
 
 Collect these facts first (read-only, no consent needed):
 
@@ -45,7 +47,7 @@ Collect these facts first (read-only, no consent needed):
 | MATLAB installed? which release? | Windows: `ls "C:/Program Files/MATLAB"`; macOS: `/Applications/MATLAB_R20*.app`; Linux: `/usr/local/MATLAB/R20*`. **Need R2023a or later**; R2025a+ recommended (live-script guidelines need it). |
 | Claude Code CLI on PATH? | `claude --version` (affects only how setup registers skills; see [GUIDE §8](docs/GUIDE.md#8-skills--layout-and-reality)) |
 | Toolkit already installed? | `~/.matlab/agentic-toolkits/bin/matlab-mcp-server(.exe)` and `config.json` (read its versions) |
-| Project root the user wants wired | ask if unclear — this is **where MATLAB will start** (decides which `startup.m` runs) |
+| Project root the user wants wired | ask if unclear - this is **where MATLAB will start** (decides which `startup.m` runs) |
 | Existing `.mcp.json`, `startup.m`, `CLAUDE.md`, `.claude/skills/` | `ls -a` |
 | Is the project under OneDrive/Dropbox? | **Stop and warn**: a Git working copy in a synced folder corrupts `.git` and fights Simulink's file locks ([GUIDE L3](docs/GUIDE.md#l3-never-put-a-git-working-copy-in-onedrive)) |
 
@@ -59,7 +61,7 @@ toolkit to use with MathWorks products), stop. MATLAB but no toolkit → §2. To
 Preferred: let the installer in this repo do it, **with the user's consent**:
 
 ```powershell
-# Windows — dry run first, then for real
+# Windows - dry run first, then for real
 powershell -ExecutionPolicy Bypass -File install\install.ps1 -Project <project> -DryRun -InstallToolkit
 powershell -ExecutionPolicy Bypass -File install\install.ps1 -Project <project> -InstallToolkit
 ```
@@ -72,7 +74,7 @@ matlab.addons.toolbox.installToolbox('agenticToolkitInstaller.mltbx');     % Add
 setupAgenticToolkit("install", Toolkit=["matlab","simulink"], Prompt=false)
 ```
 
-Result: `~/.matlab/agentic-toolkits/{bin,matlab,simulink,config.json}` — the MCP server binary (~37 MB), both skill
+Result: `~/.matlab/agentic-toolkits/{bin,matlab,simulink,config.json}` - the MCP server binary (~37 MB), both skill
 catalogs, and the Simulink `tools.json`. Do **not** run `setupAgenticToolkit("configure")`: it would overwrite
 `.mcp.json` wholesale and write `--matlab-session-mode=existing`, which only works when a MATLAB with
 `satk_initialize` is already running. This repo writes the working config for you (§3).
@@ -89,14 +91,14 @@ user's installed toolboxes; `satk.Configuration.setCustomLibraries("<dir>")` reg
 powershell -ExecutionPolicy Bypass -File install\install.ps1 -Project <project> -Profile core -DryRun
 powershell -ExecutionPolicy Bypass -File install\install.ps1 -Project <project> -Profile core
 ```
-(macOS/Linux: `install/install.sh --project <project> --profile core --dry-run`, *unverified there*.)
+(macOS/Linux: `install/install.sh --project <project> --profile core --dry-run`; verified on macOS, unverified on Linux.)
 
 It writes/links, idempotently and never overwriting without `-Force`:
 
 | Artifact | Why it matters |
 |---|---|
 | `<project>/.mcp.json` | The verified flag set (below). MCP servers load once, at Claude Code start → **restart required**. |
-| `<project>/startup.m` | Calls `satk_initialize`. **Without it every `model_*` tool fails** with *"Unrecognized function or variable 'satk_initialize'"* — the #1 first-time failure, and it looks like a broken install. |
+| `<project>/startup.m` | Calls `satk_initialize`. **Without it every `model_*` tool fails** with *"Unrecognized function or variable 'satk_initialize'"* - the #1 first-time failure, and it looks like a broken install. |
 | `C:\mcplog` (or `~/mcplog`) | Short, local, writable log folder. The server opens a unix-domain socket inside it: deep paths → `socket path is too long`; `%TEMP%` → `access denied for socket file`; never OneDrive. |
 | `<project>/.claude/skills/` | Junctions (Windows, no admin needed) / symlinks into the vendor catalog, per profile, **plus real copies** of this repo's own skills and the four cheat-sheet notes. |
 
@@ -119,7 +121,7 @@ The `.mcp.json` it writes (every flag explained in [GUIDE §4](docs/GUIDE.md#4-c
             "--log-folder=<short local dir>", "--log-level=info", "--disable-telemetry=true" ],
   "alwaysLoad": true } } }
 ```
-`auto` not `existing` (deliberate — "the two disagreeing with `config.json` is correct, do not fix either");
+`auto` not `existing` (deliberate - "the two disagreeing with `config.json` is correct, do not fix either");
 `desktop` not `headless` (so a human can see and unblock prompts); telemetry is on by default and the opt-out
 **must be re-applied after every toolkit update**.
 
@@ -130,7 +132,7 @@ symlinks into stale copies.
 
 ---
 
-## 4. Licence reality — find out what can actually run
+## 4. Licence reality - find out what can actually run
 
 Call `detect_matlab_toolboxes` (after §6 step 1) and keep the answer. The toolkit installs regardless of what the
 user licenses; skills then fall into **Usable / Degraded / Blocked**. Typical map (verified with only
@@ -152,7 +154,7 @@ MATLAB + Simulink + MATLAB/Simulink Coder):
 | `matlab-use-vehicle-network`, `matlab-import-export-vehicle-data` | Vehicle Network Toolbox | **Blocked** if absent (it is *not* implied by Simulink) |
 
 **When a skill is blocked: say so and stop. Never fake Model Advisor, coverage or compliance output.** Put the
-resulting status table into the project's `CLAUDE.md` (§8) — otherwise the next session will cheerfully attempt
+resulting status table into the project's `CLAUDE.md` (§8) - otherwise the next session will cheerfully attempt
 a run the licence cannot support and the failure surfaces three steps later as something confusing.
 
 ---
@@ -171,7 +173,7 @@ a run the licence cannot support and the failure surfaces three steps later as s
 | `model_query_params`, `model_resolve_params` | any parameter / resolve `Kp` to a number | `compile=true` only for compiled params |
 | `model_edit` | add/connect/configure/delete/replace/create_subsystem, in ONE scope per call | **destructive, does not save, cannot be undone** |
 | `model_check` | unconnected ports/lines, Stateflow lint | after any edit; does not see dangling branch stubs |
-| `model_read_diagnostics` | Diagnostic Viewer messages | never compiles itself — trigger update-diagram/sim first |
+| `model_read_diagnostics` | Diagnostic Viewer messages | never compiles itself - trigger update-diagram/sim first |
 | `model_test` | Gherkin tests | needs Simulink Test; load `testing-simulink-models` first |
 
 Server resources: `guidelines://coding`, `guidelines://plain-text-live-code` (R2025a+). Prefer `model_*` over
@@ -179,7 +181,7 @@ hand-written `set_param`/`get_param`: the skills assume them.
 
 ---
 
-## 6. Verify — in this order, and report what you actually saw
+## 6. Verify - in this order, and report what you actually saw
 
 1. **Tell the user to restart Claude Code** in the project (or restart your session if you can). MCP servers and
    skills load at session start. Until then none of the below can work.
@@ -187,7 +189,7 @@ hand-written `set_param`/`get_param`: the skills assume them.
 3. `evaluate_matlab_code` with `which satk_initialize` (non-empty) and `ver('simulink')`.
 4. With any `.slx` in the project: `model_overview` (`scope=root`, `detail=tree`) → proves `startup.m` ran and the
    extension file is registered. With no model: build a throwaway in a temp dir
-   (`new_system`/`add_block`/`save_system`), read it, delete it — and say you did.
+   (`new_system`/`add_block`/`save_system`), read it, delete it - and say you did.
 5. `skills` appear in the session's skill list (`matlab-*`, `simulink-*`).
 6. Optional vendor check in MATLAB: `validate_installation`.
 
@@ -195,7 +197,7 @@ Failures → [GUIDE §11](docs/GUIDE.md#11-troubleshooting) (symptom → cause �
 
 ---
 
-## 7. The knowledge in this repo — what to read, when
+## 7. The knowledge in this repo - what to read, when
 
 | Read | When |
 |---|---|
@@ -232,10 +234,10 @@ Your session ends; the project's `CLAUDE.md` persists. So:
 2. **Append [templates/CLAUDE.matlab-rules.md](templates/CLAUDE.matlab-rules.md)** (fill the `<placeholders>`: MATLAB
    root, licensed products from §4, blocked-skill list). Show the user the final text before writing it.
 3. Copy `templates/.gitattributes.example` (`*.slx binary`, …) and `.gitignore.example` only if the project lacks
-   them; **do not** gitignore `resources/project/` (MATLAB project metadata — `openProject` fails without it).
+   them; **do not** gitignore `resources/project/` (MATLAB project metadata - `openProject` fails without it).
 4. Remind the user: if `CLAUDE.md` is gitignored it never reaches a colleague's clone; anything a human must know
    belongs in a tracked README/CONTRIBUTING too.
-5. Optionally save a *reference memory*: "MATLAB/Simulink setup pack = github.com/KaremBenChikha/matlab-mcp-guide;
+5. Optionally save a *reference memory*: "MATLAB/Simulink setup pack = github.com/KaremBenChikha/sim2paper;
    traps in docs/SIMULINK_TRAPS.md".
 
 ---
@@ -263,7 +265,7 @@ Full text in the docs; pointers so you recognise the symptom:
 
 This pack is a snapshot of one team's experience on R2026a. When you discover something new or find a statement
 here to be wrong: tell the user, and (if they want) open a PR with the correction. **Record corrections rather
-than silently overwriting** — the previous edition of this guide called the vendor licence plain BSD-3-Clause; it is BSD-3 plus a use
+than silently overwriting** - the previous edition of this guide called the vendor licence plain BSD-3-Clause; it is BSD-3 plus a use
 restriction (clause 3), and the correction is kept visible in [GUIDE L8](docs/GUIDE.md#l8-the-vendor-licence-is-not-plain-bsd-3-clause).
 Never add project-specific or confidential material (client names, requirement IDs, licence numbers, emails,
 hostnames, IPs) to this public repo.

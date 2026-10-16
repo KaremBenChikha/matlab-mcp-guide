@@ -1,0 +1,20 @@
+.DS_Store
+# MATLAB
+*.asv
+*.mex*
+slprj/
+*.slxc
+codegen/
+results/cache/
+# LaTeX
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.synctex.gz
+paper/main.pdf
+overleaf.zip
+# big raw data (keep small inputs in matlab/data)
+*.mat
+!matlab/data/*.mat

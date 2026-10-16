@@ -23,7 +23,7 @@ cnt=OrderedDict()
 for tk,g,s,d in rows: cnt[(tk,g)]=cnt.get((tk,g),0)+1
 out=[]
 out.append('# Vendor skills catalog (MathWorks Agentic Toolkit)\n')
-out.append(f'Regenerated 2026-10-13 from the toolkit installed with **matlab 2026.08.27 / simulink 2026.09.a** — **{len(rows)} skills** ({sum(1 for r in rows if r[0]=="matlab")} MATLAB + {sum(1 for r in rows if r[0]=="simulink")} Simulink). Text is each skill\'s own frontmatter `description`, which is exactly what the agent sees when deciding whether to load it. These skills are MathWorks\' work; this file only lists them. Install them with `setupAgenticToolkit` (see ../README.md) — do not copy from here.\n')
+out.append(f'Regenerated 2026-10-13 from the toolkit installed with **matlab 2026.08.27 / simulink 2026.09.a** - **{len(rows)} skills** ({sum(1 for r in rows if r[0]=="matlab")} MATLAB + {sum(1 for r in rows if r[0]=="simulink")} Simulink). Text is each skill\'s own frontmatter `description`, which is exactly what the agent sees when deciding whether to load it. These skills are MathWorks\' work; this file only lists them. Install them with `setupAgenticToolkit` (see ../README.md) - do not copy from here.\n')
 out.append('Refresh this list yourself any time: `python tools/gen_skills_catalog.py > SKILLS_CATALOG.md`.\n')
 out.append('| Toolkit | Group | Skills |\n|---|---|---|')
 for (tk,g),n in cnt.items(): out.append(f'| {tk} | {g} | {n} |')
@@ -32,5 +32,5 @@ cur=None
 for tk,g,s,d in rows:
     if (tk,g)!=cur:
         cur=(tk,g); out.append(f'\n## {tk} / {g}\n')
-    out.append(f'- **`{s}`** — {d}')
+    out.append(f'- **`{s}`** - {d}')
 print('\n'.join(out))

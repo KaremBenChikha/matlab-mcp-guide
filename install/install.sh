@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Wire a local project to MATLAB/Simulink for Claude Code (macOS / Linux).
 # Same behaviour as install.ps1: idempotent, never overwrites without --force, never downloads without
-# --install-toolkit.  NOTE: written from the verified Windows flow; NOT yet run on macOS/Linux - read the
+# --install-toolkit.  Verified on macOS (R2026b, Apple Silicon, 2026-10-16); NOT yet run on Linux - read the
 # --dry-run output before trusting it, and fix this script (and the docs) if it differs from reality.
 #
 # usage: install/install.sh [--project DIR] [--matlab-root DIR] [--log-folder DIR] [--profile core|all]
@@ -116,4 +116,5 @@ done
 # 7. integrity
 bad=0; for l in "$SK"/*; do [ -L "$l" ] && [ ! -e "$l" ] && { echo "BROKEN: $l"; bad=$((bad+1)); }; done
 say "broken links: $bad"
+echo "CHECK: matlab -batch \"validate_installation\" (from $PROJECT) should report status: pass"
 echo "NEXT: restart Claude Code in $PROJECT, then ask: 'list installed MATLAB toolboxes' and 'give me an overview of <Model>.slx'"

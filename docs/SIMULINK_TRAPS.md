@@ -28,7 +28,7 @@ Contents: [A. Editing & tooling](#a-editing--tooling) · [B. Buses & ports](#b-b
   or `>`; set To Workspace `SampleTime` explicitly.
 - **`model_edit` cannot address a block whose name equals its parent's** (block `Clock` inside subsystem
   `Clock`): it fails *after* disconnecting lines. Use MATLAB's own `replace_block` matched on `BlockType`.
-- **`model_edit` `incremental` layout keeps old blocks where they are and packs new ones around them** —
+- **`model_edit` `incremental` layout keeps old blocks where they are and packs new ones around them** -
   on a level that `arrangeSystem` had laid out, 18 new blocks crossed every new wire over the old and
   stacked two labels. After the edit run `Simulink.BlockDiagram.arrangeSystem`, `print(['-s' sys],'-dpng')`
   and **look**, then save.
@@ -48,7 +48,7 @@ Contents: [A. Editing & tooling](#a-editing--tooling) · [B. Buses & ports](#b-b
 - **A model left open on the visible desktop gets its view state saved**, dirtying the tree with a
   ~4 MB cosmetic diff. Close loaded models when done. Zip-diff any unexplained `.slx` change against HEAD
   before touching it: view state only touches `windowsInfo.xml`, `coreProperties.xml`, `thumbnail.png`;
-  anything that moves a `<Block ` or `<Line>` count is real work — never discard it.
+  anything that moves a `<Block ` or `<Line>` count is real work - never discard it.
 - **A manual tidy-up from the desktop sweeps wide annotations.** Selecting blocks with a rubber band takes
   a wide note with them and deleting/moving drops it (this happened six times in one project). Before
   committing a desktop save: `unzip` both versions, `diff -rq`, count `<Annotation SID`; keep a script
@@ -58,16 +58,16 @@ Contents: [A. Editing & tooling](#a-editing--tooling) · [B. Buses & ports](#b-b
   terminated the model. Pair every `compile` with its own `term` in the same script.
 - **A demo or harness that calls its own builder SAVES the model it builds** and leaves a tracked `.slx`
   modified after every run. Run `git status` after running any demo/generator.
-- **`Commented` on/off round-trips leave the model Dirty** though nothing changed — close without saving.
+- **`Commented` on/off round-trips leave the model Dirty** though nothing changed - close without saving.
 - **Full Model Advisor audit takes 30+ min and outlives the MCP idle timeout.** It completes on the MATLAB
   side: read output file timestamps instead of re-running.
 - **MATLAB regexp has no `\b`** (use `\<` `\>`), and `^` is start-of-string unless `'lineanchors'`; `(?m)`
-  silently does nothing. A counting regex that matches nothing reads as "0 checks" with no error — test it
+  silently does nothing. A counting regex that matches nothing reads as "0 checks" with no error - test it
   on known input.
-- **`run('script')` executes in the caller's workspace** — a script that assigns `t0` destroys your `tic`
+- **`run('script')` executes in the caller's workspace** - a script that assigns `t0` destroys your `tic`
   handle. Time in the caller; isolate runners behind a function with an unlikely local name.
 - **MATLAB integer division rounds to nearest; a block with `RndMeth = Floor` truncates.** An
-  `uint16(a / uint64(2^32))` is one too high for any value ≥ 2^31 — invisible while test values are small.
+  `uint16(a / uint64(2^32))` is one too high for any value ≥ 2^31 - invisible while test values are small.
   When a `.m` and a block must agree, integer `/` is a parity question: use `idivide(...,'floor')`, a shift,
   or keep the pair.
 - **A Bash heredoc eats `\n`.** When writing MATLAB through a shell, write the file with the editor tool,
@@ -76,12 +76,12 @@ Contents: [A. Editing & tooling](#a-editing--tooling) · [B. Buses & ports](#b-b
 ## B. Buses & ports
 
 - **Bus-element inports share ONE physical port.** Deleting one element block drops the port's *incoming
-  line* and orphans the survivors — invisible in the diagram (two "dead" taps removed silently disconnected
+  line* and orphans the survivors - invisible in the diagram (two "dead" taps removed silently disconnected
   a live signal). After any such edit: reconnect the port explicitly, then `model_check`.
 - **Setting `Element` on an Out Bus Element RENAMES that element for every downstream reader.** A "park
   the outports on placeholder names first" pass retargeted 24 readers. Never re-purpose an outport for
   another field: find it by the element it carries and rename the block; do a deliberate element rename
-  **once, at the source**. Companion: `set_param(blk,'Name',…)` invalidates any path string you hold —
+  **once, at the source**. Companion: `set_param(blk,'Name',…)` invalidates any path string you hold -
   hold handles.
 - **A fresh Out Bus Element names its element `signal1` and NESTS the bus.** `add_block` + `PortName` on a
   block meant to export a *whole* bus yields `Element='signal1'` from the unnamed line; readers are
@@ -98,35 +98,35 @@ Contents: [A. Editing & tooling](#a-editing--tooling) · [B. Buses & ports](#b-b
   at that number re-attaches to whatever line is left ("destination port already has a line connection").
   Detach every line on the block's ports first, record readers of an output before its last element block
   goes, delete the reader-side stub, then re-add and assert. Deleting an Outport leaves a line at the parent
-  with both ends gone (`model_check`: *Connected off*) — delete it outright.
+  with both ends gone (`model_check`: *Connected off*) - delete it outright.
 - **Port names and block names share one namespace in a subsystem.** A block cannot be called `LTE` beside a
   port `LTE`; use `ibe_`/`obe_` prefixes on port blocks.
 - **`get_param(portHandle,'Name')` is the SIGNAL name, not the port name.** To find a bus port by name read
   `get_param([sys '/ibe_X'],'Port')` on the In Bus Element that declares it.
 - **A MATLAB Function's vector output is 1-D even if the `.m` returns a column.** A rebuild with an honest
-  `Reshape` to a column logged `24x1xN` instead of `Nx24` and cost a bit-identity compare — `isequal`
+  `Reshape` to a column logged `24x1xN` instead of `Nx24` and cost a bit-identity compare - `isequal`
   compares dimensions. Match what the logs showed before; a 2-D scalar beside 1-D scalars is a latent flip
-  (Logic block output dimensionality follows whichever input propagates first) — Reshape to 1-D at the source.
+  (Logic block output dimensionality follows whichever input propagates first) - Reshape to 1-D at the source.
 - **Relational Operator and Switch do not expand a scalar against a *matrix*** (`[4 1]`); a 1-D vector
   would expand. Expand the scalar first (vertical Concatenate of copies) or keep it 1-D.
 
 ## C. Lines
 
-- **A wire has no colour of its own — it takes its SOURCE block's `ForegroundColor`.** Colour layers by
+- **A wire has no colour of its own - it takes its SOURCE block's `ForegroundColor`.** Colour layers by
   colouring *sources*. A multi-class source gets its dominant class; per-signal colour needs a Goto/From pair.
 - **`delete_line(handle)` on a branched line removes every branch.** To drop one consumer use the port-pair
-  form `delete_line(sys, srcPort, dstPort)` — **but it leaves a dangling stub** (`DstPortHandle -1`, dashed
+  form `delete_line(sys, srcPort, dstPort)` - **but it leaves a dangling stub** (`DstPortHandle -1`, dashed
   red) invisible to `model_check` and to a capture that skips `SrcPortHandle<0`. Sweep after any port-pair
   delete, or rebuild the source line outright (delete from the source, add every real destination back).
 - **`find_system(...,'FindAll','on','Type','line')` returns branch segments as well as trunks**, each
   reporting the trunk's `SrcPortHandle`; a trunk's `DstPortHandle` lists every leaf with dangling ones as
-  `-1`. Filter `LineParent < 0` for trunks and collect handles **before** any `delete_line` — deleting a
+  `-1`. Filter `LineParent < 0` for trunks and collect handles **before** any `delete_line` - deleting a
   trunk invalidates its branches ("Invalid Simulink object handle").
 - **`find_system(sys,'SearchDepth',1,'Type','block')` returns `sys` itself first only when `sys` is a
   subsystem.** A model root is not a block, so the `b(2:end)` idiom drops the first real block. Strip the
   first element only when it equals `sys`.
-- **An area annotation's name is a path** — no `/` in an area or note title.
-- **`add_block(existingMatlabFunctionBlock,newPath)` copies the chart with its script** — the way to move a
+- **An area annotation's name is a path** - no `/` in an area or note title.
+- **`add_block(existingMatlabFunctionBlock,newPath)` copies the chart with its script** - the way to move a
   MATLAB Function block up a level. Reconnect by port number; the copy has no lines.
 
 ## D. Types, rates & blocks
@@ -147,7 +147,7 @@ Contents: [A. Editing & tooling](#a-editing--tooling) · [B. Buses & ports](#b-b
 - **A stateful component that runs every step diverges from a `.m` that guards on `valid`.** The block
   evicted a live entry on idle steps that the `.m` ignored. Gate the *write* of every store on the `.m`'s
   guard, apply `reset` to the previous state before the write, and check idle/eviction/reset cases with a
-  scripted mini oracle — a stimulus that never reaches a threshold can never pin it.
+  scripted mini oracle - a stimulus that never reaches a threshold can never pin it.
 - **Algebraic loops through a feedback path** (a controller's own outputs fed back through a peer or a
   parse chain) are not broken by a Rate Transition; a **Unit Delay read** is (one step of lag). Know the
   lag you are buying.
@@ -161,7 +161,7 @@ Contents: [A. Editing & tooling](#a-editing--tooling) · [B. Buses & ports](#b-b
   slow signal feeding a fast consumer is refused ("performs rate transition").
 - **A harness of a component whose Unit Delays carry an explicit sample time must step at that time**; a
   `FromWorkspace` driving a matrix port needs the `struct('time',…,'signals',struct('values',V,'dimensions',[n 1]))`
-  form with `V` sized `n×1×N` — `timeseries` is for scalars.
+  form with `V` sized `n×1×N` - `timeseries` is for scalars.
 - **One time base:** feed a component's time through a port from one clock; never add a
   second `DigitalClock` (rounding `Floor` vs `Nearest` differs at another step).
 - **A state machine without Stateflow is blocks, and the pattern is fixed:** one subsystem per `case`
@@ -174,35 +174,35 @@ Contents: [A. Editing & tooling](#a-editing--tooling) · [B. Buses & ports](#b-b
 
 - **Variant Subsystems map choice ports to container ports BY NAME, not by position.** Two sources wired to
   the wrong ports hid for weeks with only a data type as symptom. Compare mirrored copies **by port
-  number** as well — the compiled positional signature is what a harness or `model_edit` by index sees.
+  number** as well - the compiled positional signature is what a harness or `model_edit` by index sees.
 - **A Subsystem Reference is ONE file, N instances.** An edit made through one instance fails on the other
   with "locked by …". Edit the referenced file once (`load_system('x_subsystem')`, edit, `save_system`).
   A sweep with `find_system(...,'LookUnderMasks','all')` descends into nested references and locks on the
-  first instance — filter hits to the model's own blocks and edit nested files as their own models.
+  first instance - filter hits to the model's own blocks and edit nested files as their own models.
 - **A variant flag's justification can outlive its reason.** A comment said the block choice lacked a port;
   it had it, wired. Read the choice's ports before trusting a comment about them.
 - **A new declared variant pair is several edits** (a table of pairs, the standard's table, and a test with
   its own hard-coded list). Search for the pair name's siblings before declaring done.
-- **A parked (Commented) block is in the file but out of the compile** — it keeps parameters and interior,
+- **A parked (Commented) block is in the file but out of the compile** - it keeps parameters and interior,
   counts in zip-diff block counts, but types nothing, logs nothing, takes no port slot. A parked
   `ToWorkspace` and a live replacement on the same variable name collide when uncommented.
 
 ## F. Logging
 
 - **`ToWorkspace` keeps 1000 samples by default.** Set `MaxDataPoints='inf'` on every sink, including those
-  a scratch harness adds — otherwise the last 1000 samples are logged and a "pass" compares only the tail.
+  a scratch harness adds - otherwise the last 1000 samples are logged and a "pass" compares only the tail.
   A report must say what window it covered.
 - **A tap's name is not evidence of where it lives.** `_B` taps sat inside the `A` side on the `A` signals;
-  `find_system` the tap and read its `Parent`. A logged flag can be wired from the wrong source for weeks —
+  `find_system` the tap and read its `Parent`. A logged flag can be wired from the wrong source for weeks -
   check logging against the thing it claims to log.
-- **Every negative scenario needs a vacuity guard** — an assertion that the injection actually happened
+- **Every negative scenario needs a vacuity guard** - an assertion that the injection actually happened
   (`all()` over an empty selection is true).
 - **Some variables can only be set with `setappdata`**: a `setVariable` value reaches the blocks but
   `exist()` inside an `InitFcn` returns 0. Document which injection route each knob takes.
 
 ## G. Paths, dictionaries & sessions
 
-- **Never a bare `addpath(genpath(root))`** — see L12 in the [guide](GUIDE.md#l12-genpath-sweeps-git-worktrees-and-archives-onto-the-path).
+- **Never a bare `addpath(genpath(root))`** - see L12 in the [guide](GUIDE.md#l12-genpath-sweeps-git-worktrees-and-archives-onto-the-path).
   Use one filtered helper everywhere. Diagnose with `which <fn> -all`, then `git worktree list`.
 - **A dictionary's UNSAVED changes in one MATLAB are what a fresh MATLAB reads** (L10). Check
   `HasUnsavedChanges==0` in every open MATLAB before a background capture, and never run a
@@ -210,9 +210,9 @@ Contents: [A. Editing & tooling](#a-editing--tooling) · [B. Buses & ports](#b-b
 - **Defining a dictionary name in the base workspace at a different value makes Simulink refuse to run**
   ("Symbol … has multiple inconsistent definitions"). That is the point. Read values via a helper; never
   retype one into a `.m`. Generate the dictionary from a script and edit the script, not the `.sldd`.
-- **A run of the article may have a minimum `StopTime`** enforced by a guard in the init — a demo can be
+- **A run of the article may have a minimum `StopTime`** enforced by a guard in the init - a demo can be
   silently broken for a month by a shorter default. Put such guards in `CLAUDE.md`.
-- **Do not `set_param` a `StopFcn` on the article** — blank it on the `SimulationInput`
+- **Do not `set_param` a `StopFcn` on the article** - blank it on the `SimulationInput`
   (`in.setModelParameter('StopFcn','')`) when a run must not draw.
 - **Model callbacks resolve against the current folder, not the project** (guide L2): any `dir`, `exist`,
   `delete`, `rmdir` in a Close/Stop/Init callback follows the cwd or the path. Resolve the project root
@@ -237,7 +237,7 @@ pass**.
 - **Write the oracle check BEFORE rebuilding.** Converting MATLAB Function blocks to drawn blocks with the
   `.m` as oracle found real defects in the original `.m` code on the first mini-check.
 - **A suite that errors at the end records nothing.** If a runner ends with `error('FAILURES')` the
-  artifact may show `passed 0 / failed 1` with no text — run the suite directly to see which line failed.
+  artifact may show `passed 0 / failed 1` with no text - run the suite directly to see which line failed.
 - **Generated docs/maps of a model must be regenerated with every model change**, in the same commit.
 - **Ordering of port numbers is an interface.** Treat a port-order change as a breaking change for every
   harness, mirror and script that indexes by number.

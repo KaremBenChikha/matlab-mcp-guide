@@ -1,4 +1,4 @@
-# Scripting idioms — building and editing Simulink by code
+# Scripting idioms - building and editing Simulink by code
 
 Copy-paste patterns that worked. Pair with [SIMULINK_TRAPS](SIMULINK_TRAPS.md) (what goes wrong) and the
 four always-read cheat-sheets in [`skills/`](../skills/) (`simulink-interaction.md`, `-modeling.md`,
@@ -13,7 +13,7 @@ four always-read cheat-sheets in [`skills/`](../skills/) (`simulink-interaction.
    `Goto_`/`From_`, `c_` Constants, `sw_` Switches, `ud_` Unit Delays, `and_`/`or_`/`ge_`/`lt_` logic,
    `term_` terminators (hide the name, label the port).
 3. **Buses over scalars.** Whole-bus ports for interfaces; bus elements for fields.
-4. **Taps only** — no Scope/Display blocks in a model that is run headless; one diagnostics window is the viewer.
+4. **Taps only** - no Scope/Display blocks in a model that is run headless; one diagnostics window is the viewer.
 5. **Computed layouts, not eyeballed pixels** (`arrangeSystem`, or the tile-layout skill for parallel tiles).
 6. **A constant is not a signal.** No inport named after a constant; a stage owns its own `c_<name>` Constant,
    a tunable value is a dictionary entry read by one Constant per reader.
@@ -22,7 +22,7 @@ four always-read cheat-sheets in [`skills/`](../skills/) (`simulink-interaction.
 8. **A component exports the fields something reads**; terminate unread outputs at the block (`term_…`),
    unless a requirement names a future consumer.
 9. **A nested repeated design is a Subsystem Reference file** (`models/<name>_subsystem.slx`), registered
-   with its harness — never N copies.
+   with its harness - never N copies.
 10. **A MATLAB Function block in the article needs a written reason on its level.** "It is only a rig" is not
     one. Reasons that hold: a cryptographic primitive verified by known-answer vectors; hardware-in-the-loop glue.
 

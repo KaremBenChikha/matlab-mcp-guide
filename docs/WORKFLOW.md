@@ -50,4 +50,4 @@ still exists before recommending it.
 
 Never finish work without updating `README.md` in the same commit: a logbook row (**say why, cite evidence**),
 and any of Layout / Conventions / Open threads / Restore points that went stale. Never write a result you did
-not run — "MATLAB was unavailable" is a valid entry; an invented count is not.
+not run - "MATLAB was unavailable" is a valid entry; an invented count is not.

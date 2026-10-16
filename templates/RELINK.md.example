@@ -1,4 +1,4 @@
-# Skill junctions — what is linked here, and how to restore what is not
+# Skill junctions - what is linked here, and how to restore what is not
 
 <!-- Copy to .claude/skills/RELINK.md in your project (the folder is usually gitignored). Fill in the date,
      versions and the keep-list. The point: after `setupAgenticToolkit("update")` renames skills, you can
@@ -30,6 +30,6 @@ cmd //c mklink //J "$(basename "$s")" "$(cygpath -w "$s")"      # //J, not /J ; 
 Restart Claude Code afterwards.
 
 ## After a toolkit update
-`setupAgenticToolkit("update", Prompt=false)` — **Prompt=false is mandatory from an agent session.**
+`setupAgenticToolkit("update", Prompt=false)` - **Prompt=false is mandatory from an agent session.**
 Delete every junction, recreate from this list, then check for BROKEN links (mklink succeeds even when the
 target does not exist). Restart Claude Code (a new MCP server binary only loads at session start).

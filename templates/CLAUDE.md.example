@@ -1,4 +1,4 @@
-# CLAUDE.md — template for a MATLAB/Simulink project
+# CLAUDE.md - template for a MATLAB/Simulink project
 
 <!--
 HOW TO USE THIS FILE
@@ -19,7 +19,7 @@ clone. Anything a human collaborator must know belongs in a TRACKED file as well
 
 <One paragraph: what the project is, who the client/stakeholder is, what the deliverable is.>
 
-There is no build or test command — the code runs inside MATLAB/Simulink. The regression suite is
+There is no build or test command - the code runs inside MATLAB/Simulink. The regression suite is
 `<run_all_verify.m>`.
 
 **What is deliberately NOT here:** <e.g. client correspondence and meeting material live in
@@ -27,7 +27,7 @@ OneDrive at ...>
 
 ## Read this first
 
-**<PROJECT_INDEX.md>** — annotated file tree plus a "where to look, by question" table. Consult it
+**<PROJECT_INDEX.md>** - annotated file tree plus a "where to look, by question" table. Consult it
 **before** searching or globbing; it will usually point straight at the right file.
 
 <!-- An index like this is worth writing once. It converts a five-tool-call search into one read. -->
@@ -46,7 +46,7 @@ OneDrive at ...>
 | Pre-sim configuration | `<functions/preSim/*.m>` |
 | Post-sim diagnostics | `<functions/postSim/*.m>` |
 
-The `.slx` files are binary — **do not attempt to read or edit them as text.** To change behaviour,
+The `.slx` files are binary - **do not attempt to read or edit them as text.** To change behaviour,
 edit the corresponding `.m` file, which is what the Simulink MATLAB Function blocks call.
 
 <!-- Then any project-wide convention that is invisible from the code but assumed everywhere:
@@ -63,11 +63,11 @@ edit the corresponding `.m` file, which is what the Simulink MATLAB Function blo
      Without this table the agent attempts things it cannot do, and the failure surfaces
      three steps later as something confusing. Refresh it with detect_matlab_toolboxes. -->
 
-Verified <date>. Installed and licensed: **<MATLAB, Simulink, ...>** — nothing else.
+Verified <date>. Installed and licensed: **<MATLAB, Simulink, ...>** - nothing else.
 
 | Skill | Status | Blocker |
 |---|---|---|
-| `building-simulink-models`, `simulating-simulink-models`, the profiler/debugger skills, `managing-simulink-projects` | Usable | — |
+| `building-simulink-models`, `simulating-simulink-models`, the profiler/debugger skills, `managing-simulink-projects` | Usable | - |
 | `specifying-mbd-algorithms`, `specifying-plant-models`, `filing-bug-reports` | Usable | Templates only, no toolbox needed |
 | `generate-requirement-drafts` | Degraded | No Requirements Toolbox → use its **YAML fallback**, not `.slreqx` |
 | `testing-simulink-models` | Degraded | No Simulink Test → no `sltest.TestCase`; use plain `sim` + `assert` |
@@ -75,20 +75,20 @@ Verified <date>. Installed and licensed: **<MATLAB, Simulink, ...>** — nothing
 | `building-architecture-models` | **Blocked** | No System Composer |
 | Most MATLAB-catalog skills (RF, radar, wireless, robotics, image processing, …) | **Blocked** | Those toolboxes are not installed |
 
-**When a skill is blocked, say so and stop — do not fake Model Advisor output or invent compliance
+**When a skill is blocked, say so and stop - do not fake Model Advisor output or invent compliance
 results.** `detect_matlab_toolboxes` settles any doubt in one call.
 
 <!-- That last paragraph is the whole point of the section. Without it, a plausible-looking
      compliance table can appear in a certification context. Naming the tool gives the agent
      a cheap alternative to guessing. -->
 
-## Skills — trigger table
+## Skills - trigger table
 
 <!-- 169 skills is too many to choose from reliably. Map PHRASINGS YOU ACTUALLY USE to skill
      names. Two jobs: tells the agent when to stop and read a skill instead of improvising,
      and doubles as a live index of what is relevant to YOUR project. -->
 
-**Check these before improvising a MATLAB/Simulink approach** — if one covers the task, follow it
+**Check these before improvising a MATLAB/Simulink approach** - if one covers the task, follow it
 rather than inventing a method. Read its `SKILL.md` first; only open `references/` or `scripts/`
 when `SKILL.md` says to.
 
@@ -115,19 +115,19 @@ when `SKILL.md` says to.
 
 Read the relevant note before writing any MATLAB that touches a model:
 
-- **Interaction** — "this block" = `gcb`, "this model" = `bdroot`, "this subsystem" = `gcs`
-- **Modeling** — use `add_block` + `Simulink.BlockDiagram.arrangeSystem`; **never** hand-position
+- **Interaction** - "this block" = `gcb`, "this model" = `bdroot`, "this subsystem" = `gcs`
+- **Modeling** - use `add_block` + `Simulink.BlockDiagram.arrangeSystem`; **never** hand-position
   blocks with pixel coordinates
-- **Simulation** — **always** `out = sim(in)` with a `Simulink.SimulationInput`; **never**
-  `set_param` for simulation parameters — that mutates the model file instead of configuring a run
-- **Baseline** — capture a baseline **before** modifying any model, then verify against it
+- **Simulation** - **always** `out = sim(in)` with a `Simulink.SimulationInput`; **never**
+  `set_param` for simulation parameters - that mutates the model file instead of configuring a run
+- **Baseline** - capture a baseline **before** modifying any model, then verify against it
 
 ## MATLAB MCP
 
 Configured in `.mcp.json` as server name `matlab` (project scope, stdio).
-**Restart Claude Code after editing it** — MCP servers load at session start.
+**Restart Claude Code after editing it** - MCP servers load at session start.
 
-Prefer the `model_*` tools over hand-written `set_param`/`get_param` — they are what the skills
+Prefer the `model_*` tools over hand-written `set_param`/`get_param` - they are what the skills
 assume, and mixing approaches produces advice that doesn't match what then happens.
 Cold start is ≈20–30 s for the first call; later calls in the same session are fast.
 
@@ -146,7 +146,7 @@ Facts worth not rediscovering:
   starting one.
 - **Never run `setupAgenticToolkit("configure")` from an agent session.** It prompts with `input()`;
   every MCP call arrives as an empty line producing "Invalid selection", and it loops forever. No
-  tool call can rescue it — a human must press Ctrl-C in the MATLAB desktop. It also overwrites
+  tool call can rescue it - a human must press Ctrl-C in the MATLAB desktop. It also overwrites
   `.mcp.json` wholesale; a backup is at `<tools/.mcp.json.bak>`.
 
 ## Version control
@@ -155,7 +155,7 @@ Facts worth not rediscovering:
   `-diff -merge -text`, so Git refuses to auto-merge and the only resolution is "pick one side and
   redo the other side's work by hand in Simulink." **Avoid the situation rather than resolving it:**
   put logic in `.m` files, hold one model at a time, keep branches short.
-- **Before any `model_edit`**, confirm the tree is clean and committed — `model_edit` is destructive
+- **Before any `model_edit`**, confirm the tree is clean and committed - `model_edit` is destructive
   and a binary `.slx` edit cannot be diffed or undone. `git stash`/commit first; never assume a
   restore point exists.
 - <Branch protection / PR policy.>
@@ -171,7 +171,7 @@ Named restore points:
 - <e.g. MATLAB functions are `%#codegen` and written for embedded code generation: fixed-size
   arrays, no dynamic allocation, no cell arrays. Keep new code codegen-safe.>
 - <e.g. Header comments cite the governing requirement or spec section. Preserve and update those
-  citations when editing — they are the traceability evidence.>
+  citations when editing - they are the traceability evidence.>
 - <e.g. your file/document naming scheme, if there is one.>
 
 ## Do not touch
@@ -179,22 +179,22 @@ Named restore points:
 <!-- Without this the agent will helpfully "fix" things that regenerate, or hand-edit an
      output whose source is elsewhere. -->
 
-- `resources/project/**` — MATLAB project metadata (generated XML). **Committed deliberately** —
+- `resources/project/**` - MATLAB project metadata (generated XML). **Committed deliberately** -
   `openProject` fails without it.
-- `<docs/diagrams/*.svg>` — **generated**. Edit `<docs/diagrams/src/*.py>` and regenerate; never
+- `<docs/diagrams/*.svg>` - **generated**. Edit `<docs/diagrams/src/*.py>` and regenerate; never
   hand-edit the output.
-- `skills/**` — vendor-authored. Read and follow them; don't edit. Project-specific procedures
+- `skills/**` - vendor-authored. Read and follow them; don't edit. Project-specific procedures
   belong in a new file, not inside a vendor skill.
-- <The `archive/...` branch — a frozen record. Never merge it.>
+- <The `archive/...` branch - a frozen record. Never merge it.>
 
-## Maintenance — keep README.md current (mandatory)
+## Maintenance - keep README.md current (mandatory)
 
 <!-- The rule that pays off most. An agent session has no memory of last week. A logbook that
      explains WHY a decision was made is the difference between an agent that reinforces your
      architecture and one that relitigates it every session. -->
 
 `README.md` is the only documentation this repository ships. **Never finish a piece of work without
-updating it in the same commit** — not a follow-up one.
+updating it in the same commit** - not a follow-up one.
 
 ### 1. The logbook is not optional
 
@@ -205,17 +205,17 @@ Add an entry for anything substantive:
 ```
 
 - **Say why, not what.** `git log` already records what. The logbook exists for the reasoning that
-  would otherwise evaporate — the constraint discovered, the option rejected, the measurement that
+  would otherwise evaporate - the constraint discovered, the option rejected, the measurement that
   settled it. *"Scoped the CloseFcn to the project root"* is weak; *"…it was deleting `.slxc`
   relative to MATLAB's current folder, demonstrated by destroying a decoy in an unrelated tree"*
   is the entry worth having.
-- **Cite evidence** — test counts, spec IDs, measured numbers. A claim that something works without
+- **Cite evidence** - test counts, spec IDs, measured numbers. A claim that something works without
   saying how that was established is noise.
 - **Record corrections.** When a documented fact turns out wrong, that is the *most* valuable entry.
   **Never silently overwrite a wrong fact.**
 - **Never record a result you have not run.** If a claim needs MATLAB and MATLAB is unavailable, say
   so in the entry instead of assuming.
-- **Skip trivia** — formatting, comment typos, model layout tidying. One entry per day per theme,
+- **Skip trivia** - formatting, comment typos, model layout tidying. One entry per day per theme,
   not per commit.
 
 ### 2. The rest of README that goes stale
@@ -236,4 +236,4 @@ so rather than assuming.
 ### 4. This file
 
 If `CLAUDE.md` is gitignored, it never reaches a clone. Anything a human collaborator must know
-belongs in a tracked file as well — duplication beats a rule nobody receives.
+belongs in a tracked file as well - duplication beats a rule nobody receives.

@@ -1,0 +1,26 @@
+% Template is temporary: swap for the target venue's class (IEEEtran, elsarticle, ...) once known.
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,graphicx,booktabs,hyperref}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\newcommand{\resdir}{../results} % rewritten to "." by make overleaf-zip
+\graphicspath{{\resdir/figures/}}
+\newcommand{\inputtable}[1]{\input{\resdir/tables/#1}}
+
+\title{TODO: Paper title}
+\author{Your Name}
+\date{\today}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+\todo[inline]{Abstract.}
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/results}
+
+\bibliographystyle{plain}
+\bibliography{refs}
+\end{document}
